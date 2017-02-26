@@ -1,23 +1,13 @@
 #!/usr/bin/python3
 
-import neural3layers as n3
 import os
+import pickle
 from math import floor
+import tools.neural3layers as n3
+from tools.load_img import load_img
 
 
-def load_img(img_path):
-    with open(img_path) as f:
-        data = [x for x in f if not x.startswith('#')]  # remove comments
-    p = data.pop(0)  # P thing
-    dim = tuple(map(int, data.pop(0).split()))
-    arr = []
-    for line in data:
-        for c in line.strip():
-            arr.append(int(c))
-    return dim, arr
-
-
-def train(iterat):
+def train(iterat, layer_size_factor):
     in_arr = []
     out_arr = []
     train_true_dir = "train/true/"
@@ -29,24 +19,14 @@ def train(iterat):
         in_arr.append(load_img(train_false_dir + img)[1])
         out_arr.append([0])
 
-    return n3.train(in_arr, out_arr, iterat, floor(len(in_arr[0])/200))
-
-
-def test(network, rounded):
-    in_arr = []
-    test_dir = "test/"
-    for img in os.listdir(test_dir):
-        in_arr.append(load_img(test_dir + img)[1])
-    results = dict(zip(os.listdir(test_dir), n3.use(in_arr, network, rounded=rounded)))
-    return results
+    return n3.train(in_arr, out_arr, iterat, floor(len(in_arr[0])/layer_size_factor))
 
 
 if __name__ == '__main__':
     print("training...")
-    net = train(10000)
-    print("testing...")
-    res = test(net, True)
+    net = train(10000, 200)
+    print("Saving network...")
+    with open("network.pkl", "wb") as f:
+        pickle.dump(net, f)
     print("Network :")
     print(net)
-    print("Test results :")
-    print(res)
