@@ -10,7 +10,7 @@ def nonlin(x, deriv=False):
     return 1/(1+np.exp(-x))
 
 
-def train(in_array, out_array, iteration):
+def train(in_array, out_array, iteration, layer_size):
     # input dataset
     x = np.array(in_array)
 
@@ -22,8 +22,8 @@ def train(in_array, out_array, iteration):
     np.random.seed(1)
 
     # randomly initialize our weights with mean 0
-    syn0 = 2*np.random.random((len(in_array[0]), 4)) - 1
-    syn1 = 2*np.random.random((4, 1)) - 1
+    syn0 = 2*np.random.random((len(in_array[0]), layer_size)) - 1
+    syn1 = 2*np.random.random((layer_size, 1)) - 1
 
     for iterat in range(iteration):
 
@@ -49,15 +49,22 @@ def train(in_array, out_array, iteration):
         # update weights
         syn1 += l1.T.dot(l2_delta)
         syn0 += l0.T.dot(l1_delta)
+        if 100 * iterat % iteration == 0:
+            print(iterat)
     return [syn0, syn1]
 
 
-def use(in_array, network):
+def use(in_array, network, rounded=False):
 
     l1 = nonlin(np.dot(np.array(in_array), network[0]))
     l2 = nonlin(np.dot(l1, network[1]))
     res = l2.tolist()
 
-    for i in range(len(res)):
-        res[i] = round(res[i][0])
+    if rounded:
+        for i in range(len(res)):
+            res[i] = round(res[i][0])
+    else:
+        for i in range(len(res)):
+            res[i] = res[i][0]
+
     return res
